@@ -1,5 +1,5 @@
 %% team200_testing.m
-%
+% test
 % This Matlab script is part of the starter code for the inverse
 % kinematics part of Project 2 in MEAM 520 at the University of Pennsylvania.
 % It tests the team's inverse kinematics code for various configurations.
