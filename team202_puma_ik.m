@@ -7,7 +7,7 @@ function thetas = team202_puma_ik(x, y, z, phi, theta, psi)
 % kinematics function of project 2 in MEAM 520 at the University of
 % Pennsylvania.  The original was written by Professor Katherine J.
 % Kuchenbecker. Students will work in teams modify this code to create
-% their own script. Post questions on the class's Piazza forum. 
+% their own script. Post questions on the class's Piazza forum.
 %
 % The first three input arguments (x, y, z) are the desired coordinates of
 % the PUMA's end-effector tip in inches, specified in the base frame.  The
@@ -98,39 +98,83 @@ theta_maxs = [theta1_max, theta2_max, theta3_max, theta4_max, theta5_max, theta6
 % this sentinel value of NaN to be sure that the code calling this function
 % can tell that something is wrong and shut down the PUMA.
 
-% Calculate theta1
-th1_1 = atan2(y, x) - atan2((b + d), (sqrt(x^2 + y^2 - (b+d)^2))) + pi;
-th1_2 = atan2(y, x) - atan2((b + d), (sqrt(x^2 + y^2 - (b+d)^2)));
-
-% Calculate theta2
-th3_1 = acos((x^2 + y^2 - (b + d)^2 + (z - a)^2 - c^2 - e^2)/(2*c*e)) - pi/2;
-th3_2 = -acos((x^2 + y^2 - (b + d)^2 + (z - a)^2 - c^2 - e^2)/(2*c*e)) - pi/2;
-
-% Calculate theta2
-th2_1 = atan2((z - a), (sqrt(x^2 + y^2 - (b + d)^2))) - atan2((e*cos(th3_1)), (c - e*sin(th3_1)));
-th2_2 = atan2((z - a), (sqrt(x^2 + y^2 - (b + d)^2))) - atan2((e*cos(th3_2)), (c - e*sin(th3_2)));
-
-% DH matrices for joints 1-3
-A1 = dh_kuchenbe(0,  pi/2,   a, th1_1);
-A2 = dh_kuchenbe(c,     0,  -b, th2_1);
-A3 = dh_kuchenbe(0, -pi/2,  -d, th3_1);
-
-% Calculate rotation matrices
+% Calculate rotation matrix to define orientation of end effector.
 R06 = [1 0 0; 0 0 -1; 0 1 0];
-
-T03 = A1*A2*A3;
-R03 = T03(1:3, 1:3);
-
-R36 = R03'*R06;
 
 % Calculate wrist center
 xc = x - f*R06(1, 3);
 yc = y - f*R06(2, 3);
 zc = z - f*R06(3, 3);
 
+% Calculate theta1
+
+th1_1 = atan2(yc, xc) - atan2((b + d), sqrt(xc^2 + yc^2 - (b+d)^2));
+th1_2 = atan2(yc, xc) + atan2(-(b + d), -sqrt(xc^2 + yc^2 - (b+d)^2));
+
+% th1_1 = atan2(y, x) - atan2((b + d), (sqrt(x^2 + y^2 - (b+d)^2))) + pi;
+% th1_2 = atan2(y, x) - atan2((b + d), (sqrt(x^2 + y^2 - (b+d)^2)));
+
+% Calculate theta3
+th3_1 = atan2(sqrt(1-((xc^2 + yc^2 - (b + d)^2 + (zc - a)^2 - c^2 - e^2)/(2*c*e))^2),...
+    ((xc^2 + yc^2 - (b + d)^2 + (zc - a)^2 - c^2 - e^2)/(2*c*e))) + pi/2;
+
+th3_2 = atan2(-sqrt(1-((xc^2 + yc^2 - (b + d)^2 + (zc - a)^2 - c^2 - e^2)/(2*c*e))^2),...
+    ((xc^2 + yc^2 - (b + d)^2 + (zc - a)^2 - c^2 - e^2)/(2*c*e))) + pi/2;
+% th3_1 = acos((x^2 + y^2 - (b + d)^2 + (z - a)^2 - c^2 - e^2)/(2*c*e)) - pi/2;
+% th3_2 = -acos((x^2 + y^2 - (b + d)^2 + (z - a)^2 - c^2 - e^2)/(2*c*e)) - pi/2;
+
+% Calculate theta2
+th2_1 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_1)), (c - e*sin(th3_1)));
+th2_2 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_2)), (c - e*sin(th3_2)));
+
+% Create variables containing
+position_angles = [th1_1 th1_1 th1_2 th1_2;
+                   th2_1 th2_2 th2_1 th2_2;
+                   th3_1 th3_2 th3_1 th3_2];
+
+% Initialize variables for storing things later!
+% T06 = zeros(4,4,length(position_thetas(1,:)));
+% R36 = zeros(4,4,length(position_thetas(1,:))):
+
+for i = 1:size(position_angles,2)
+    theta1 = position_angles(1,i);
+    theta2 = position_angles(2,i);
+    theta3 = position_angles(3,i);
+    A1 = dh_kuchenbe(0,  pi/2,   a, theta1);
+    A2 = dh_kuchenbe(c,     0,  -b, theta2);
+    A3 = dh_kuchenbe(0, -pi/2,  -d, theta3);
+    T03 = A1*A2*A3;
+    R03 = T03(1:3,1:3);
+    R36 = R03'*R06;
+    % Solve for Euler angles
+Euler_angles(1,i) = atan2(sqrt(1 - R36(3, 3)^2), R36(3, 3));
+Euler_angles(1,i+size(position_angles,2)) = atan2(-sqrt(1 - R36(3, 3)^2), R36(3, 3));
+
+Euler_angles(2,i) = atan2(R36(2, 3), R36(1, 2));
+Euler_angles(2,i+size(position_angles,2)) = atan2(-R36(2, 3), -R36(1, 2));
+
+Euler_angles(3,i) = atan2(-R36(3, 1), R36(3, 2));
+Euler_angles(3,i+size(position_angles,2)) = atan2(R36(3, 1), -R36(3, 2));
+end
+
+final_thetas = [position_angles position_angles; Euler_angles];
+th1 = final_thetas(1,:);
+th2 = final_thetas(2,:);
+th3 = final_thetas(3,:);
+th4 = final_thetas(4,:);
+th5 = final_thetas(5,:);
+th6 = final_thetas(6,:);
+
+%{
+
+% Create a variable where Euler angles can be stored. It will have 3 rows
+% (for the three angles) and 6 columns (2 options per variable)
+orientiation_angles = zeros(3,6);
+
+for j = 1:length(position_angles(1,:))
 % Solve for Euler angles
-theta_1 = atan2(sqrt(1 - R36(3, 3)^2), R36(3, 3));
-theta_2 = atan2(-sqrt(1 - R36(3, 3)^2), R36(3, 3));
+theta_1 = atan2(sqrt(1 - R36(3, 3, j)^2), R36(3, 3, j));
+theta_2 = atan2(-sqrt(1 - R36(3, 3, j)^2), R36(3, 3, j));
 
 phi_1 = atan2(R36(2, 3), R36(1, 2));
 phi_2 = atan2(-R36(2, 3), -R36(1, 2));
@@ -138,12 +182,15 @@ phi_2 = atan2(-R36(2, 3), -R36(1, 2));
 psi_1 = atan2(-R36(3, 1), R36(3, 2));
 psi_2 = atan2(R36(3, 1), -R36(3, 2));
 
+
 th1 = [th1_1 th1_2];
 th2 = [th2_1 th2_2];
 th3 = [th3_1 th3_2];
 th4 = [phi_1 phi_2];
 th5 = [theta_1 theta_2];
 th6 = [psi_1 psi_2];
+%}
+
 
 % You should update this section of the code with your IK solution.
 % Please comment your code to explain what you are doing at each step.

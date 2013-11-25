@@ -1,5 +1,5 @@
 %% team202_testing.m
-% test
+% 
 % This Matlab script is part of the starter code for the inverse
 % kinematics part of Project 2 in MEAM 520 at the University of Pennsylvania.
 % It tests the team's inverse kinematics code for various configurations.
@@ -14,7 +14,7 @@ clc
 
 % Set whether to animate the robot's movement and how much to slow it down.
 pause on;  % Set this to off if you don't want to watch the animation.
-GraphingTimeDelay = 0.05; % The length of time that Matlab should pause between positions when graphing, if at all, in seconds.
+GraphingTimeDelay = .5;%0.05; % The length of time that Matlab should pause between positions when graphing, if at all, in seconds.
 
 
 %% CHOOSE INPUT PARAMETERS
