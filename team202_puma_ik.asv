@@ -110,13 +110,12 @@ th3_2 = -acos((x^2 + y^2 - (b + d)^2 + (z - a)^2 - c^2 - e^2)/(2*c*e)) - pi/2;
 th2_1 = atan2((z - a), (sqrt(x^2 + y^2 - (b + d)^2))) - atan2((e*cos(th3_1)), (c - e*sin(th3_1)));
 th2_2 = atan2((z - a), (sqrt(x^2 + y^2 - (b + d)^2))) - atan2((e*cos(th3_2)), (c - e*sin(th3_2)));
 
-% DH matrices for joints 1-3
-A1 = dh_kuchenbe(0,  pi/2,   a, th1_1);
-A2 = dh_kuchenbe(c,     0,  -b, th2_1);
-A3 = dh_kuchenbe(0, -pi/2,  -d, th3_1);
+A1 = dh_kuchenbe(0,  pi/2,   a, theta1);
+A2 = dh_kuchenbe(c,     0,  -b, theta2);
+A3 = dh_kuchenbe(0, -pi/2,  -d, theta3);
 
 % Calculate rotation matrices
-R06 = [1 0 0; 0 0 -1; 0 1 0];
+R06 = [
 
 T03 = A1*A2*A3;
 R03 = T03(1:3, 1:3);

@@ -1,4 +1,4 @@
-%% team200_testing.m
+%% team202_testing.m
 % test
 % This Matlab script is part of the starter code for the inverse
 % kinematics part of Project 2 in MEAM 520 at the University of Pennsylvania.
@@ -20,7 +20,7 @@ GraphingTimeDelay = 0.05; % The length of time that Matlab should pause between 
 %% CHOOSE INPUT PARAMETERS
 
 % Set the test type.
-testType = 4;
+testType = 3;
 
 switch(testType)
 
@@ -156,7 +156,7 @@ for i = 1:length(ox_history)
     % Send the desired pose into the inverse kinematics to obtain the joint
     % angles that will place the PUMA's end-effector at this position and
     % orientation relative to frame 0.
-    thetas = team200_puma_ik(ox, oy, oz, phi, theta, psi);
+    thetas = team202_puma_ik(ox, oy, oz, phi, theta, psi);
     
     % For each of the columns in thetas.
     s = size(thetas);
