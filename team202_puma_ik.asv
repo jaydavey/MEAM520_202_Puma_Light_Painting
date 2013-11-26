@@ -97,6 +97,8 @@ if (sqrt(x^2 + y^2 + (z-a)^2) > sqrt((b+d)^2 + (c+e)^2))
 end
 
 
+
+
 %% CALCULATE INVERSE KINEMATICS SOLUTION(S)
 
 % For now, just set the first solution to NaN (not a number) and the second

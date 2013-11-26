@@ -27,16 +27,11 @@ switch(testType)
     case 1
 
         % One position and orientation that you can manually modify.
-        a = 13.0; % inches
-        b =  2.5; % inches
-        c =  8.0; % inches
-        d =  2.5; % inches
-        e =  8.0; % inches
-        f =  2.5; % inches
+
         % Define the configuration.
-        ox_history = b+d; % inches
-        oy_history = 0; % inches
-        oz_history = a+c+e; % inches
+        ox_history = c+e; % inches
+        oy_history = b+d; % inches
+        oz_history = 0; % inches
         phi_history = 0; % radians
         theta_history = 0; % radians
         psi_history = 0; % radians
