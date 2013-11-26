@@ -131,15 +131,12 @@ th2_2 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_2)),
 th2_3 = pi - th2_1;
 th2_4 = pi - th2_2;
 
-% Create variables containing
+% Create variables containing four position configurations of arm
 position_angles = [th1_1 th1_1 th1_2 th1_2;
                    th2_1 th2_2 th2_3 th2_4;
                    th3_1 th3_2 th3_3 th3_4];
 
-% Initialize variables for storing things later!
-% T06 = zeros(4,4,length(position_thetas(1,:)));
-% R36 = zeros(4,4,length(position_thetas(1,:))):
-
+% Initializse a variable in which we can store Euler Angles               
 n = size(position_angles,2);
 Euler_angles = zeros(3, 2*n);
 
@@ -173,32 +170,19 @@ th4 = final_thetas(4,:);
 th5 = final_thetas(5,:);
 th6 = final_thetas(6,:);
 
-%{
 
-% Create a variable where Euler angles can be stored. It will have 3 rows
-% (for the three angles) and 6 columns (2 options per variable)
-orientiation_angles = zeros(3,6);
-
-for j = 1:length(position_angles(1,:))
-% Solve for Euler angles
-theta_1 = atan2(sqrt(1 - R36(3, 3, j)^2), R36(3, 3, j));
-theta_2 = atan2(-sqrt(1 - R36(3, 3, j)^2), R36(3, 3, j));
-
-phi_1 = atan2(R36(2, 3), R36(1, 2));
-phi_2 = atan2(-R36(2, 3), -R36(1, 2));
-
-psi_1 = atan2(-R36(3, 1), R36(3, 2));
-psi_2 = atan2(R36(3, 1), -R36(3, 2));
-
-
-th1 = [th1_1 th1_2];
-th2 = [th2_1 th2_2];
-th3 = [th3_1 th3_2];
-th4 = [phi_1 phi_2];
-th5 = [theta_1 theta_2];
-th6 = [psi_1 psi_2];
-%}
-
+for j = 1:size(final_thetas,2)
+    [points_to_plot x06 y06 z06] = puma_fk_kuchenbe(th1(j),th2(j),th3(j),th4(j),th5(j),th6(j));
+    o6 = points_to_plot(1:3,8);
+    if (abs(x) < (abs(o6(1))+.01)) && (abs(y) < (abs(o6(2))+.01)) && (abs(z) < (abs(o6(3))+.01))
+%         disp('Your IK works!')
+    else
+        fk = points_to_plot(1:3,8)'
+        ik = [x y z]
+        error('Something in your inverse kinematics does not match your foward kinematics!')
+    end
+end
+    
 
 % You should update this section of the code with your IK solution.
 % Please comment your code to explain what you are doing at each step.
