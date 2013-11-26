@@ -89,7 +89,7 @@ theta_maxs = [theta1_max, theta2_max, theta3_max, theta4_max, theta5_max, theta6
 %% Check for workspace violation
 
 %checking for wrist center solution
-if (sqrt(x^2 + y^2 + (z-a)^2) > sqrt((b+d)^2 + (c+e)^2))
+if ((sqrt(x^2 + y^2 + (z-a)^2) > sqrt((b+d)^2 + (c+e)^2))||(sqrt(x^2 + y^2)<b+d))
     thetas = [NaN;NaN;NaN;NaN;NaN;NaN];
     fprintf('No solution to inverse kinematics.  Target outside dexterous workspace!\n')
     return 

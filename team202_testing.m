@@ -34,9 +34,9 @@ switch(testType)
         e =  8.0; % inches
         f =  2.5; % inches
         % Define the configuration.
-        ox_history = b+d; % inches
+        ox_history = b+d-1 ; % inches
         oy_history = 0; % inches
-        oz_history = a+c+e; % inches
+        oz_history = a; % inches
         phi_history = 0; % radians
         theta_history = 0; % radians
         psi_history = 0; % radians
@@ -144,7 +144,7 @@ disp('Click in this window and press control-c to stop the code.')
 % Plot the robot once in the home position to get the plot handles.
 figure(1)
 h = plot_puma_kuchenbe(0,0,0,0,0,0,0,0,0,0,-pi/2,0,0,0,0);
-view([0,0,100]);
+%view([0,0,100]);
 
 % Step through the ox_history vector to test the inverse kinematics.
 for i = 1:length(ox_history)
