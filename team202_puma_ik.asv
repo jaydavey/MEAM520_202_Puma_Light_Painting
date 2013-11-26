@@ -99,9 +99,7 @@ theta_maxs = [theta1_max, theta2_max, theta3_max, theta4_max, theta5_max, theta6
 % can tell that something is wrong and shut down the PUMA.
 
 % Calculate rotation matrix to define orientation of end effector.
-R06 = [cos(phi)*cos(theta)*cos(psi) - sin(phi)*sin(psi)  -cos(phi)*cos(theta)*sin(psi) - sin(phi)*cos(psi)  cos(phi)*sin(theta);
-       sin(phi)*cos(theta)*cos(psi) + cos(phi)*sin(psi)  -sin(phi)*cos(theta)*sin(psi) + cos(phi)*cos(psi)  sin(phi)*sin(theta);
-       -sin(theta)*cos(psi)                              sin(theta)*sin(psi)                                cos(theta)];
+R06 = [cos(phi)*cos(theta)*cos(;
 
 % Calculate wrist center
 xc = x - f*R06(1, 3);
