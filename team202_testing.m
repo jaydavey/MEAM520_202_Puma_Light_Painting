@@ -20,7 +20,7 @@ GraphingTimeDelay = 0.05;%0.05; % The length of time that Matlab should pause be
 %% CHOOSE INPUT PARAMETERS
 
 % Set the test type.
-testType = 1;
+testType = 2;
 
 switch(testType)
 
@@ -34,7 +34,7 @@ switch(testType)
         e =  8.0; % inches
         f =  2.5; % inches
         % Define the configuration.
-        ox_history = b+d-1 ; % inches
+        ox_history = b+d+1; % inches
         oy_history = 0; % inches
         oz_history = a; % inches
         phi_history = 0; % radians
@@ -59,9 +59,9 @@ switch(testType)
         % Define ending configuration.
         ox_end = 10.5; % inches
         oy_end = -5; % inches
-        oz_end = 32; % inches
-        phi_end = pi; % radians
-        theta_end = -pi/2; % radians
+        oz_end = 21; % inches
+        phi_end = 0; % radians
+        theta_end = pi/2; % radians
         psi_end = 0; % radians
 
         % Do the interpolation.

@@ -86,15 +86,6 @@ theta6_max = degtorad(295);
 theta_mins = [theta1_min, theta2_min, theta3_min, theta4_min, theta5_min, theta6_min];
 theta_maxs = [theta1_max, theta2_max, theta3_max, theta4_max, theta5_max, theta6_max];
 
-%% Check for workspace violation
-
-%checking for wrist center solution
-if ((sqrt(x^2 + y^2 + (z-a)^2) > sqrt((b+d)^2 + (c+e)^2))||(sqrt(x^2 + y^2)<b+d))
-    thetas = [NaN;NaN;NaN;NaN;NaN;NaN];
-    fprintf('No solution to inverse kinematics.  Target outside dexterous workspace!\n')
-    return 
-
-end
 
 
 %% CALCULATE INVERSE KINEMATICS SOLUTION(S)
@@ -124,83 +115,90 @@ zc = z - f*R06(3, 3);
 % to the second and third joint variable pairings (th2_3 th3_3) and (th2_4
 % th3_4).
 
-% Calculate theta1
-th1_1 = atan2(yc, xc) - atan2((b + d), sqrt(xc^2 + yc^2 - (b+d)^2));
-th1_2 = atan2(yc, xc) + atan2(-(b + d), -sqrt(xc^2 + yc^2 - (b+d)^2));
+%solve for angles and catch any impossible solutions
+try
 
-% Calculate theta3
-D = ((xc^2 + yc^2 - (b + d)^2 + (zc - a)^2 - c^2 - e^2)/(2*c*e));
-th3_1 = atan2(sqrt(1-D^2), D) - pi/2;
-th3_2 = atan2(-sqrt(1-D^2), D) - pi/2;
-th3_3 = pi - th3_1;
-th3_4 = pi - th3_2;
+    % Calculate theta1
+    th1_1 = atan2(yc, xc) - atan2((b + d), sqrt(xc^2 + yc^2 - (b+d)^2));
+    th1_2 = atan2(yc, xc) + atan2(-(b + d), -sqrt(xc^2 + yc^2 - (b+d)^2));
 
-% Calculate theta2
-th2_1 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_1)), (c - e*sin(th3_1)));
-th2_2 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_2)), (c - e*sin(th3_2)));
-th2_3 = pi - th2_1;
-th2_4 = pi - th2_2;
+    % Calculate theta3
+    D = ((xc^2 + yc^2 - (b + d)^2 + (zc - a)^2 - c^2 - e^2)/(2*c*e));
 
-% Create variables containing four position configurations of arm
-position_angles = [th1_1 th1_1 th1_2 th1_2;
-                   th2_1 th2_2 th2_3 th2_4;
-                   th3_1 th3_2 th3_3 th3_4];
-
-% Initializse a variable in which we can store Euler Angles               
-n = size(position_angles,2);
-Euler_angles = zeros(3, 2*n);
-
-for i = 1:n
-    theta1 = position_angles(1,i);
-    theta2 = position_angles(2,i);
-    theta3 = position_angles(3,i);
-    A1 = dh_kuchenbe(0,  pi/2,   a, theta1);
-    A2 = dh_kuchenbe(c,     0,  -b, theta2);
-    A3 = dh_kuchenbe(0, -pi/2,  -d, theta3);
-    T03 = A1*A2*A3;
-    R03 = T03(1:3,1:3);
-    R36 = R03'*R06;
+ 
+    th3_1 = atan2(sqrt(1-D^2), D) - pi/2;
+    th3_2 = atan2(-sqrt(1-D^2), D) - pi/2;
+    th3_3 = pi - th3_1;
+    th3_4 = pi - th3_2;
+    % Calculate theta2
+    th2_1 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_1)), (c - e*sin(th3_1)));
+    th2_2 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_2)), (c - e*sin(th3_2)));
+    th2_3 = pi - th2_1;
+    th2_4 = pi - th2_2;
     
-    % Solve for Euler angles
-    Euler_angles(2,i) = -atan2(sqrt(1 - R36(3, 3)^2), R36(3, 3));
-    Euler_angles(2,i+n) = -atan2(-sqrt(1 - R36(3, 3)^2), R36(3, 3));
+    % Create variables containing four position configurations of arm
+    position_angles = [th1_1 th1_1 th1_2 th1_2;
+                       th2_1 th2_2 th2_3 th2_4;
+                       th3_1 th3_2 th3_3 th3_4];
 
-    Euler_angles(1,i) = atan2(R36(2, 3), R36(1, 3));
-    Euler_angles(1,i+n) = atan2(-R36(2, 3), -R36(1, 3));
+    % Initializse a variable in which we can store Euler Angles               
+    n = size(position_angles,2);
+    Euler_angles = zeros(3, 2*n);
 
-    Euler_angles(3,i) = atan2(R36(3, 2), -R36(3, 1));
-    Euler_angles(3,i+n) = atan2(-R36(3, 2), R36(3, 1));
-end
+    for i = 1:n
+        theta1 = position_angles(1,i);
+        theta2 = position_angles(2,i);
+        theta3 = position_angles(3,i);
+        A1 = dh_kuchenbe(0,  pi/2,   a, theta1);
+        A2 = dh_kuchenbe(c,     0,  -b, theta2);
+        A3 = dh_kuchenbe(0, -pi/2,  -d, theta3);
+        T03 = A1*A2*A3;
+        R03 = T03(1:3,1:3);
+        R36 = R03'*R06;
 
-final_thetas = [position_angles position_angles; Euler_angles];
-th1 = final_thetas(1,:);
-th2 = final_thetas(2,:);
-th3 = final_thetas(3,:);
-th4 = final_thetas(4,:);
-th5 = final_thetas(5,:);
-th6 = final_thetas(6,:);
+        % Solve for Euler angles (and catch wrist singularity?)
+        
+        Euler_angles(2,i) = -atan2(sqrt(1 - R36(3, 3)^2), R36(3, 3));
+        Euler_angles(2,i+n) = -atan2(-sqrt(1 - R36(3, 3)^2), R36(3, 3));
 
+        Euler_angles(1,i) = atan2(R36(2, 3), R36(1, 3));
+        Euler_angles(1,i+n) = atan2(-R36(2, 3), -R36(1, 3));
 
-for j = 1:size(final_thetas,2)
-    [points_to_plot x06 y06 z06] = puma_fk_kuchenbe(th1(j),th2(j),th3(j),th4(j),th5(j),th6(j));
-    o6 = points_to_plot(1:3,8);
-    if (abs(x) < (abs(o6(1))+.01)) && (abs(y) < (abs(o6(2))+.01)) && (abs(z) < (abs(o6(3))+.01))
-%         disp('Your IK works!')
-    else
-        fk = points_to_plot(1:3,8)'
-        ik = [x y z]
-        error('Something in your inverse kinematics does not match your foward kinematics!')
+        Euler_angles(3,i) = atan2(R36(3, 2), -R36(3, 1));
+        Euler_angles(3,i+n) = atan2(-R36(3, 2), R36(3, 1));
     end
-end
+
+    final_thetas = [position_angles position_angles; Euler_angles];
+    th1 = final_thetas(1,:);
+    th2 = final_thetas(2,:);
+    th3 = final_thetas(3,:);
+    th4 = final_thetas(4,:);
+    th5 = final_thetas(5,:);
+    th6 = final_thetas(6,:);
+
+
+    for j = 1:size(final_thetas,2)
+        [points_to_plot x06 y06 z06] = puma_fk_kuchenbe(th1(j),th2(j),th3(j),th4(j),th5(j),th6(j));
+        o6 = points_to_plot(1:3,8);
+        if (abs(x) < (abs(o6(1))+.01)) && (abs(y) < (abs(o6(2))+.01)) && (abs(z) < (abs(o6(3))+.01))
+    %         disp('Your IK works!')
+        else
+            fk = points_to_plot(1:3,8)'
+            ik = [x y z]
+            error('Something in your inverse kinematics does not match your foward kinematics!')
+        end
+    end
+    
+catch
     
 
-% You should update this section of the code with your IK solution.
-% Please comment your code to explain what you are doing at each step.
-% Feel free to create additional functions as needed - please name them all
-% to start with team2XX_, where 2XX is your team number.  For example, it
-% probably makes sense to handle inverse position kinematics and inverse
-% orientation kinematics separately.
+    %checking for wrist center solution
+    thetas = [NaN;NaN;NaN;NaN;NaN;NaN];
+    fprintf('No solution to inverse kinematics.  Target outside dexterous workspace!\n')
 
+    return
+    
+end
 
 %% FORMAT OUTPUT
 
