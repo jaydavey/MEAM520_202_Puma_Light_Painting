@@ -16,7 +16,7 @@ clc
 
 % Set whether to animate the robot's movement and how much to slow it down.
 pause on;  % Set this to off if you don't want to watch the animation.
-GraphingTimeDelay = 0.05;%0.05; % The length of time that Matlab should pause between positions when graphing, if at all, in seconds.
+GraphingTimeDelay = 0.5;%0.05; % The length of time that Matlab should pause between positions when graphing, if at all, in seconds.
 
 
 %% ROBOT DIMENSIONS
@@ -40,9 +40,9 @@ switch(testType)
         % One position and orientation that you can manually modify.
         
         % Define the configuration.
-        ox_history = c; % inches
-        oy_history = b + d; % inches
-        oz_history = a + e - f; % inches
+        ox_history = 14.6129; % inches
+        oy_history = 7.7994; % inches
+        oz_history = 10.7337; % inches
         phi_history = 0; % radians
         theta_history = pi; % radians
         psi_history = 0; % radians
@@ -177,7 +177,7 @@ switch(testType)
                 psi = -atan2(-R(1, 2), -R(1, 1));
 
             % Solve for Euler angles if not at singularity
-            else
+            else5
                 theta = -atan2(sqrt(1 - R(3, 3)^2), R(3, 3));
                 phi = atan2(R(2, 3), R(1, 3));
                 psi = atan2(R(3, 2), -R(3, 1));
@@ -198,6 +198,7 @@ switch(testType)
             ux_check = (x06_check(1:3, 2) - x06_check(1:3, 1)); ux_check = ux_check/norm(ux_check);
             uy_check = (y06_check(1:3, 2) - y06_check(1:3, 1)); uy_check = uy_check/norm(uy_check);
             uz_check = (z06_check(1:3, 2) - z06_check(1:3, 1)); uz_check = uz_check/norm(uz_check);
+            R_check = [ux_check uy_check uz_check]
             ux_dev = norm(ux_check - ux);
             uy_dev = norm(uy_check - uy);
             uz_dev = norm(uz_check - uz);

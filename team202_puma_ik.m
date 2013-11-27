@@ -218,7 +218,7 @@ end
 %% FORMAT OUTPUT
 
 % Put all of the thetas into a column vector to return.
-thetas = [th1; th2; th3; th4; th5; th6]
+thetas = [th1; th2; th3; th4; th5; th6];
 
 % By the very end, each column of thetas should hold a set of joint angles
 % in radians that will put the PUMA's end-effector in the desired
