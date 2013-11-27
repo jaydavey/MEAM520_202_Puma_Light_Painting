@@ -31,7 +31,7 @@ f =  2.5; % inches
 %% CHOOSE INPUT PARAMETERS
 
 % Set the test type.
-testType = 5;
+testType = 3;
 
 switch(testType)
 
@@ -225,8 +225,8 @@ switch(testType)
        [points_to_plot, x06, y06, z06] = puma_fk_kuchenbe(th1,th2,th3,th4,th5,th6);
        
        % For tip position, simply use the o6 position! 
-       o6 = points_to_plot(1:3,8)
-       x06(1)
+       o6 = points_to_plot(1:3,8);
+       
        ox_history = o6(1);
        oy_history = o6(2);
        oz_history = o6(3);
