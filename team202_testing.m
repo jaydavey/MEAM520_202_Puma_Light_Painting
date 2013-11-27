@@ -20,7 +20,7 @@ GraphingTimeDelay = 0.05;%0.05; % The length of time that Matlab should pause be
 %% CHOOSE INPUT PARAMETERS
 
 % Set the test type.
-testType = 2;
+testType = 5;
 
 switch(testType)
 
@@ -127,7 +127,41 @@ switch(testType)
         phi_history = rand(nPoses,1) * 2 * pi;
         theta_history = -pi/2 + rand(nPoses,1) * pi;
         psi_history = rand(nPoses,1) * 2 * pi;
-                
+             
+    case 5
+        % Enter thetas, push through FK. Use FK output as input to IK.
+        
+        th1 = 0;
+        th2 = 0;
+        th3 = 0;
+        th4 = 0;
+        th5 = 0;
+        th6 = 0;
+        
+       [points_to_plot, x06, y06, z06] = puma_fk_kuchenbe(th1,th2,th3,th4,th5,th6);
+       
+       % For tip position, simply use the o6 position! 
+       o6 = points_to_plot(1:3,8)
+       x06(1)
+       ox_history = o6(1);
+       oy_history = o6(2);
+       oz_history = o6(3);
+      
+       ux = (x06(1:3,2) - x06(1:3,1)); ux = ux / norm(ux);
+       uy = (y06(1:3,2) - y06(1:3,1)); uy = uy / norm(uy);
+       uz = (z06(1:3,2) - z06(1:3,1)); uz = uz / norm(uz);
+       
+       R06 = [ux uy uz];
+       
+       theta_history = -atan2(sqrt(1 - R06(3, 3)^2), R06(3, 3));
+%        theta_history = -atan2(-sqrt(1 - R06(3, 3)^2), R06(3, 3));
+
+        phi_history = atan2(R06(2, 3), R06(1, 3));
+%         phi_history = atan2(-R06(2, 3), -R06(1, 3));
+
+        psi_history = atan2(R06(3, 2), -R06(3, 1));
+%         psi_history = atan2(-R06(3, 2), R06(3, 1));
+        
     otherwise
         error(['Unknown testType: ' num2str(testType)])
 end    
