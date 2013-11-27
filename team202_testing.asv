@@ -16,7 +16,7 @@ clc
 
 % Set whether to animate the robot's movement and how much to slow it down.
 pause on;  % Set this to off if you don't want to watch the animation.
-GraphingTimeDelay = 1;%0.05; % The length of time that Matlab should pause between positions when graphing, if at all, in seconds.
+GraphingTimeDelay = 0.05;%0.05; % The length of time that Matlab should pause between positions when graphing, if at all, in seconds.
 
 
 %% ROBOT DIMENSIONS
@@ -31,7 +31,7 @@ f =  2.5; % inches
 %% CHOOSE INPUT PARAMETERS
 
 % Set the test type.
-testType = 5;
+testType = 1;
 
 switch(testType)
 
@@ -44,7 +44,7 @@ switch(testType)
         oy_history = b + d; % inches
         oz_history = a; % inches
         phi_history = 0; % radians
-        theta_history = pi/2; % radians
+        theta_history = pi; % radians
         psi_history = 0; % radians
         
     case 2
