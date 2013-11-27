@@ -6,8 +6,8 @@ function thetas = team202_puma_ik(x, y, z, phi, theta, psi)
 % This Matlab file provides the starter code for the PUMA 260 inverse
 % kinematics function of project 2 in MEAM 520 at the University of
 % Pennsylvania.  The original was written by Professor Katherine J.
-% Kuchenbecker. Students will work in teams modify this code to create
-% their own script. Post questions on the class's Piazza forum.
+% Kuchenbecker. The final version was written by team 202 (Alex McCraw, Jay
+% Davey, and Vivienne Clayton)
 %
 % The first three input arguments (x, y, z) are the desired coordinates of
 % the PUMA's end-effector tip in inches, specified in the base frame.  The
@@ -67,26 +67,6 @@ d =  2.5; % inches
 e =  8.0; % inches
 f =  2.5; % inches
 
-%% Robot Parameters
-
-% Define joint limits
-theta1_min = degtorad(-180);
-theta1_max = degtorad(110);
-theta2_min = degtorad(-75);
-theta2_max = degtorad(240);
-theta3_min = degtorad(-235);
-theta3_max = degtorad(60);
-theta4_min = degtorad(-580);
-theta4_max = degtorad(40);
-theta5_min = degtorad(-120);
-theta5_max = degtorad(110);
-theta6_min = degtorad(-215);
-theta6_max = degtorad(295);
-
-theta_mins = [theta1_min, theta2_min, theta3_min, theta4_min, theta5_min, theta6_min];
-theta_maxs = [theta1_max, theta2_max, theta3_max, theta4_max, theta5_max, theta6_max];
-
-
 
 %% CALCULATE INVERSE KINEMATICS SOLUTION(S)
 
@@ -125,11 +105,11 @@ try
     % Calculate theta3
     D = ((xc^2 + yc^2 - (b + d)^2 + (zc - a)^2 - c^2 - e^2)/(2*c*e));
 
- 
     th3_1 = atan2(sqrt(1-D^2), D) - pi/2;
     th3_2 = atan2(-sqrt(1-D^2), D) - pi/2;
     th3_3 = pi - th3_1;
     th3_4 = pi - th3_2;
+    
     % Calculate theta2
     th2_1 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_1)), (c - e*sin(th3_1)));
     th2_2 = atan2((zc - a), (sqrt(xc^2 + yc^2 - (b + d)^2))) - atan2((e*cos(th3_2)), (c - e*sin(th3_2)));
@@ -156,16 +136,51 @@ try
         R03 = T03(1:3,1:3);
         R36 = R03'*R06;
 
-        % Solve for Euler angles (and catch wrist singularity?)
+        % If the wrist is at its orientation singularity, take two
+        % arbitrary solutions given by phi = 0 and phi = pi/2
         
-        Euler_angles(2,i) = -atan2(sqrt(1 - R36(3, 3)^2), R36(3, 3));
-        Euler_angles(2,i+n) = -atan2(-sqrt(1 - R36(3, 3)^2), R36(3, 3));
-
-        Euler_angles(1,i) = atan2(R36(2, 3), R36(1, 3));
-        Euler_angles(1,i+n) = atan2(-R36(2, 3), -R36(1, 3));
-
-        Euler_angles(3,i) = atan2(R36(3, 2), -R36(3, 1));
-        Euler_angles(3,i+n) = atan2(-R36(3, 2), R36(3, 1));
+        % Solve for Euler angles if at first wrist singularity
+        if (R36(3, 3) == 1)
+            % Euler angle theta
+            Euler_angles(2, i) = 0;
+            Euler_angles(2, i+n) = 0;
+            
+            % Euler angle phi
+            Euler_angles(1,i) = 0;
+            Euler_angles(1,i+n) = pi/2;
+            
+            % Euler angle psi
+            Euler_angles(3,i) = atan2(R36(2, 1), R36(1, 1));
+            Euler_angles(3,i+n) = atan2(R36(2, 1), R36(1, 1)) - pi/2;
+        
+        % Solve for Euler angles if at second wrist singularity
+        elseif (R36(3, 3) == -1)
+            % Euler angle theta
+            Euler_angles(2, i) = pi;
+            Euler_angles(2, i+n) = pi;
+            
+            % Euler angle phi
+            Euler_angles(1,i) = 0;
+            Euler_angles(1,i+n) = pi/2;
+            
+            % Euler angle psi
+            Euler_angles(3,i) = -atan2(-R36(1, 2), -R36(1, 1));
+            Euler_angles(3,i+n) = pi/2 - atan2(-R36(1, 2), -R36(1, 1));
+        
+        % Solve for Euler angles if not at wrist singularity
+        else
+            % Euler angle theta
+            Euler_angles(2,i) = -atan2(sqrt(1 - R36(3, 3)^2), R36(3, 3));
+            Euler_angles(2,i+n) = -atan2(-sqrt(1 - R36(3, 3)^2), R36(3, 3));
+            
+            % Euler angle phi
+            Euler_angles(1,i) = atan2(R36(2, 3), R36(1, 3));
+            Euler_angles(1,i+n) = atan2(-R36(2, 3), -R36(1, 3));
+            
+            % Euler angle psi
+            Euler_angles(3,i) = atan2(R36(3, 2), -R36(3, 1));
+            Euler_angles(3,i+n) = atan2(-R36(3, 2), R36(3, 1));
+        end
     end
 
     final_thetas = [position_angles position_angles; Euler_angles];
@@ -177,17 +192,17 @@ try
     th6 = final_thetas(6,:);
 
 
-    for j = 1:size(final_thetas,2)
-        [points_to_plot x06 y06 z06] = puma_fk_kuchenbe(th1(j),th2(j),th3(j),th4(j),th5(j),th6(j));
-        o6 = points_to_plot(1:3,8);
-        if (abs(x) < (abs(o6(1))+.01)) && (abs(y) < (abs(o6(2))+.01)) && (abs(z) < (abs(o6(3))+.01))
-    %         disp('Your IK works!')
-        else
-            fk = points_to_plot(1:3,8)'
-            ik = [x y z]
-            error('Something in your inverse kinematics does not match your foward kinematics!')
-        end
-    end
+%     for j = 1:size(final_thetas,2)
+%         [points_to_plot x06 y06 z06] = puma_fk_kuchenbe(th1(j),th2(j),th3(j),th4(j),th5(j),th6(j));
+%         o6 = points_to_plot(1:3,8);
+%         if (abs(x) < (abs(o6(1))+.01)) && (abs(y) < (abs(o6(2))+.01)) && (abs(z) < (abs(o6(3))+.01))
+%     %         disp('Your IK works!')
+%         else
+%             fk = points_to_plot(1:3,8)'
+%             ik = [x y z]
+%             error('Something in your inverse kinematics does not match your foward kinematics!')
+%         end
+%     end
     
 catch
     
