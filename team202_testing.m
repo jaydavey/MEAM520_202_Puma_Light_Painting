@@ -147,8 +147,8 @@ switch(testType)
         n = 10000;
         
         % Initialize matrices to hold deviation
-        pos_dev = zeros(n, 1);
-        rot_dev = zeros(n, 1);
+        pos_dev = zeros(8*n, 1);
+        rot_dev = zeros(8*n, 1);
         
         for i = 1:n
             % Generate random joint angles
@@ -185,23 +185,27 @@ switch(testType)
             
             % Run the IK using the previously found position and
             % orientation
-            th_check = team202_puma_ik(o(1), o(2), o(3), phi, theta, psi);
+            th_IK = team202_puma_ik(o(1), o(2), o(3), phi, theta, psi);
             
-            % Run the FK using the joint angles given by the IK
-            [points_check, x06_check, y06_check, z06_check] = puma_fk_kuchenbe(th_check(1), th_check(2), th_check(3), th_check(4), th_check(5), th_check(6));
-            o_check = points_check(1:3, 8);
-            
-            % Calculate positional deviation
-            pos_dev(i) = norm(o_check - o);
-            
-            % Calculate orientation devistion
-            ux_check = (x06_check(1:3, 2) - x06_check(1:3, 1)); ux_check = ux_check/norm(ux_check);
-            uy_check = (y06_check(1:3, 2) - y06_check(1:3, 1)); uy_check = uy_check/norm(uy_check);
-            uz_check = (z06_check(1:3, 2) - z06_check(1:3, 1)); uz_check = uz_check/norm(uz_check);
-            ux_dev = norm(ux_check - ux);
-            uy_dev = norm(uy_check - uy);
-            uz_dev = norm(uz_check - uz);
-            rot_dev(i) = norm([ux_dev, uy_dev, uz_dev]);
+            % Run the FK using the joint angles given by the IK for each
+            % configuration
+            for j = 1:8
+                th_check = th_IK(1:6, j);
+                [points_check, x06_check, y06_check, z06_check] = puma_fk_kuchenbe(th_check(1), th_check(2), th_check(3), th_check(4), th_check(5), th_check(6));
+                o_check = points_check(1:3, 8);
+
+                % Calculate positional deviation
+                pos_dev(i + (j - 1)*n) = norm(o_check - o);
+
+                % Calculate orientation devistion
+                ux_check = (x06_check(1:3, 2) - x06_check(1:3, 1)); ux_check = ux_check/norm(ux_check);
+                uy_check = (y06_check(1:3, 2) - y06_check(1:3, 1)); uy_check = uy_check/norm(uy_check);
+                uz_check = (z06_check(1:3, 2) - z06_check(1:3, 1)); uz_check = uz_check/norm(uz_check);
+                ux_dev = norm(ux_check - ux);
+                uy_dev = norm(uy_check - uy);
+                uz_dev = norm(uz_check - uz);
+                rot_dev(i + (j - 1)*n) = norm([ux_dev, uy_dev, uz_dev]);
+            end
             
         end
         

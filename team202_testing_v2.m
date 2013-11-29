@@ -1,10 +1,8 @@
 %% team202_testing.m
-% 
+%
 % This Matlab script is part of the starter code for the inverse
 % kinematics part of Project 2 in MEAM 520 at the University of Pennsylvania.
 % It tests the team's inverse kinematics code for various configurations.
-% The final version was written by team 202 (Alex McCraw, Jay Davey, and 
-% Vivienne Clayton)
 
 %% SETUP
 
@@ -16,35 +14,26 @@ clc
 
 % Set whether to animate the robot's movement and how much to slow it down.
 pause on;  % Set this to off if you don't want to watch the animation.
-GraphingTimeDelay = 0.05;%0.05; % The length of time that Matlab should pause between positions when graphing, if at all, in seconds.
-
-
-%% ROBOT DIMENSIONS
-a = 13.0; % inches
-b =  2.5; % inches
-c =  8.0; % inches
-d =  2.5; % inches
-e =  8.0; % inches
-f =  2.5; % inches
+GraphingTimeDelay = 0.05; % The length of time that Matlab should pause between positions when graphing, if at all, in seconds.
 
 
 %% CHOOSE INPUT PARAMETERS
 
 % Set the test type.
-testType = 1;
+testType = 5;
 
 switch(testType)
 
     case 1
 
         % One position and orientation that you can manually modify.
-        
+
         % Define the configuration.
-        ox_history = c + e + f; % inches
-        oy_history = b + d; % inches
-        oz_history = a; % inches
+        ox_history = 10.5; % inches
+        oy_history = 5; % inches
+        oz_history = 21; % inches
         phi_history = 0; % radians
-        theta_history = pi; % radians
+        theta_history = 0; % radians
         psi_history = 0; % radians
         
     case 2
@@ -63,11 +52,11 @@ switch(testType)
         psi_start = 0; % radians
 
         % Define ending configuration.
-        ox_end = 10.5; % inches
-        oy_end = -5; % inches
-        oz_end = 21; % inches
-        phi_end = 0; % radians
-        theta_end = pi/2; % radians
+        ox_end = 5; % inches
+        oy_end = 15; % inches
+        oz_end = 10; % inches
+        phi_end = pi; % radians
+        theta_end = -pi/2; % radians
         psi_end = 0; % radians
 
         % Do the interpolation.
@@ -136,116 +125,22 @@ switch(testType)
         
     case 5
         
-        % Run random joint angles through the forward kinematic and use the
-        % resultant position and orientation to test the inverse kinematic,
-        % checking the result against the original.  Run a large number of
-        % tests and return the mean and max deviations found for position
-        % and orientation.  Plotting does not occur during this test case
-        % to allow it to finish faster.
+        % Test the positions and orientations from the team's light painting.
         
-        % Set the number of test runs
-        n = 10000;
+        % Initialize the function that calculates positions, orientations, and
+        % colors by calling it once with no arguments.  It returns the duration of
+        % the light painting in seconds.
+        duration = team202_get_poc();
         
-        % Initialize matrices to hold deviation
-        pos_dev = zeros(n, 1);
-        rot_dev = zeros(n, 1);
+        % Create time vector.
+        t = 0:0.1:duration;
         
-        for i = 1:n
-            % Generate random joint angles
-            th_rand = rand(6, 1)*2*pi;
-            
-            % Run joint angles through FK
-            [points, x06, y06, z06] = puma_fk_kuchenbe(th_rand(1), th_rand(2), th_rand(3), th_rand(4), th_rand(5), th_rand(6));
-            
-            % Pull out position and orientation given by FK
-            o = points(1:3, 8);
-            ux = (x06(1:3, 2) - x06(1:3, 1)); ux = ux/norm(ux);
-            uy = (y06(1:3, 2) - y06(1:3, 1)); uy = uy/norm(uy);
-            uz = (z06(1:3, 2) - z06(1:3, 1)); uz = uz/norm(uz);
-            R = [ux uy uz];
-            
-            % Solve for Euler angles if at first singularity
-            if (R(3, 3) == 1)
-                theta = 0;
-                phi = 0;
-                psi = atan2(R(2, 1), R(1, 1));
-
-            % Solve for Euler angles if at second singularity
-            elseif (R(3, 3) == -1)
-                theta = pi;
-                phi = 0;
-                psi = -atan2(-R(1, 2), -R(1, 1));
-
-            % Solve for Euler angles if not at singularity
-            else
-                theta = atan2(sqrt(1 - R(3, 3)^2), R(3, 3));
-                phi = atan2(R(2, 3), R(1, 3));
-                psi = atan2(R(3, 2), -R(3, 1));
-            end
-            
-            % Run the IK using the previously found position and
-            % orientation
-            th_check = team202_puma_ik(o(1), o(2), o(3), phi, theta, psi);
-            
-            % Run the FK using the joint angles given by the IK
-            [points_check, x06_check, y06_check, z06_check] = puma_fk_kuchenbe(th_check(1), th_check(2), th_check(3), th_check(4), th_check(5), th_check(6));
-            o_check = points_check(1:3, 8);
-            
-            % Calculate positional deviation
-            pos_dev(i) = norm(o_check - o);
-            
-            % Calculate orientation devistion
-            ux_check = (x06_check(1:3, 2) - x06_check(1:3, 1)); ux_check = ux_check/norm(ux_check);
-            uy_check = (y06_check(1:3, 2) - y06_check(1:3, 1)); uy_check = uy_check/norm(uy_check);
-            uz_check = (z06_check(1:3, 2) - z06_check(1:3, 1)); uz_check = uz_check/norm(uz_check);
-            ux_dev = norm(ux_check - ux);
-            uy_dev = norm(uy_check - uy);
-            uz_dev = norm(uz_check - uz);
-            rot_dev(i) = norm([ux_dev, uy_dev, uz_dev]);
-            
+        % Step through the time vector, filling the histories by calling
+        % the function that retuns positions, orientations, and colors.
+        for i = 1:length(t)
+            [~, ox_history(i), oy_history(i), oz_history(i), phi_history(i), theta_history(i), psi_history(i)] = team202_get_poc(t(i));
         end
         
-        disp(['The mean positional deviation is: ', num2str(mean(pos_dev)), ' in'])
-        disp(['The max positional deviation is: ', num2str(max(pos_dev)), ' in'])
-        disp(['The mean rotational deviation is: ', num2str(mean(rot_dev))])
-        disp(['The max rotational deviation is: ', num2str(max(rot_dev))])
-        
-        break
-    
-    case 6
-        % Enter thetas, push through FK. Use FK output as input to IK.
-        
-        th1 = 0;
-        th2 = 0;
-        th3 = 0;
-        th4 = 0;
-        th5 = 0;
-        th6 = 0;
-        
-       [points_to_plot, x06, y06, z06] = puma_fk_kuchenbe(th1,th2,th3,th4,th5,th6);
-       
-       % For tip position, simply use the o6 position! 
-       o6 = points_to_plot(1:3,8);
-       
-       ox_history = o6(1);
-       oy_history = o6(2);
-       oz_history = o6(3);
-      
-       ux = (x06(1:3,2) - x06(1:3,1)); ux = ux / norm(ux);
-       uy = (y06(1:3,2) - y06(1:3,1)); uy = uy / norm(uy);
-       uz = (z06(1:3,2) - z06(1:3,1)); uz = uz / norm(uz);
-       
-       R06 = [ux uy uz];
-       
-       theta_history = -atan2(sqrt(1 - R06(3, 3)^2), R06(3, 3));
-%        theta_history = -atan2(-sqrt(1 - R06(3, 3)^2), R06(3, 3));
-
-        phi_history = atan2(R06(2, 3), R06(1, 3));
-%         phi_history = atan2(-R06(2, 3), -R06(1, 3));
-
-        psi_history = atan2(R06(3, 2), -R06(3, 1));
-%         psi_history = atan2(-R06(3, 2), R06(3, 1));
-
     otherwise
         error(['Unknown testType: ' num2str(testType)])
 end    
@@ -262,7 +157,6 @@ disp('Click in this window and press control-c to stop the code.')
 % Plot the robot once in the home position to get the plot handles.
 figure(1)
 h = plot_puma_kuchenbe(0,0,0,0,0,0,0,0,0,0,-pi/2,0,0,0,0);
-%view([0,0,100]);
 
 % Step through the ox_history vector to test the inverse kinematics.
 for i = 1:length(ox_history)
