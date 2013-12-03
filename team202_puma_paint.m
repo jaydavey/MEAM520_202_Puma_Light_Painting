@@ -83,6 +83,7 @@ allSolutions = team202_puma_ik(xs, ys, zs, phis, thetas, psis);
 % Choose the best solution based on the robot's home position.  You may
 % want to change this if you prefer a different solution.
 thetastart = [0 0 0 -pi*2 -pi/2 0]';
+thetastart = team202_choose_solution(allSolutions, thetastart);
 
 % Calculate time needed to get from home pose to starting pose moving at
 % angular speed of 0.5 radians per second on the joint that has the
@@ -146,9 +147,9 @@ tic
 
 % Enter an infinite loop.
 while(true)
-    
+    pause(0.0001)
     % Increment our counter.
-    i = i+1;
+    i = i+1
     
     % Get the current time elapsed and add it to the time where we're
     % starting in the painting. Store this value in the thistory vector.   
@@ -174,8 +175,12 @@ while(true)
     % is a separate solution to the IK problem.  Angles are in radians.
     allSolutions = team202_puma_ik(x, y, z, phi, theta, psi);
     
-    % Choose the best solution based on the robot's current pose and other factors.
-    thetas = team202_choose_solution(allSolutions, thetahistory(i-1,:)');
+%     if i == 2
+%         thetas = [-0.564697339684010	-0.469424024445096	-0.127237182314208	-5.62962546696118	-1.07622816352857	-0.348655554431032];
+%     else
+        % Choose the best solution based on the robot's current pose and other factors.
+        thetas = team202_choose_solution(allSolutions, thetahistory(i-1,:)');
+%     end
     
     % Check for any NaN values in the solution.
     if (any(isnan(thetas)))

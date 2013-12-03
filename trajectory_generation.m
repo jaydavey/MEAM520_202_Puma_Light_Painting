@@ -2,7 +2,7 @@
 clear all
 close all
 traj_resolution = 0.1;
-plot_resolution = 3; %must be >1
+plot_resolution = 1; %must be >1
 
 xscale = 2;
 yscale = 2;
@@ -43,11 +43,7 @@ y_origin = 0;
 z_origin = 15; %1 inch of clearance from table top
 
 %create a container to store all of the points we want to paint
-painting = zeros(size(X,1)*2, 10);
-
-%define orientation of end effector, this will stay constant for the whole
-%paint job
-painting(:,5) = painting(:,5)+pi/2;
+painting = zeros(1, 10);
 
 %plot the color of the led at points
 counter = 1;
@@ -156,6 +152,9 @@ for i = 1:plot_resolution:size(Y,1);
     end
     drawnow();
 end
+
+painting(:,5) = painting(:,5)+pi/2;
+
 
 
 
