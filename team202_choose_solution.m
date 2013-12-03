@@ -47,5 +47,98 @@ function thetas = team202_choose_solution(allSolutions, thetasnow)
 % same IK solution (the given angle as well as the given angle plus or
 % minus 2*pi*n). Be careful about this point.
 
-% For now, just return the last column of allSolutions.
-thetas = allSolutions(:,end);
+
+%% Joint Limits
+
+% Define joint limits
+theta1_min = degtorad(-180);
+theta1_max = degtorad(110);
+theta2_min = degtorad(-75);
+theta2_max = degtorad(240);
+theta3_min = degtorad(-235);
+theta3_max = degtorad(60);
+theta4_min = degtorad(-580);
+theta4_max = degtorad(40);
+theta5_min = degtorad(-120);
+theta5_max = degtorad(110);
+theta6_min = degtorad(-215);
+theta6_max = degtorad(295);
+
+theta_mins = [theta1_min theta2_min theta3_min theta4_min theta5_min theta6_min];
+theta_maxs = [theta1_max theta2_max theta3_max theta4_max theta5_max theta6_max];
+
+
+%% Filter solutions
+
+% Initialize optimal solution distance
+opt_sol = [NaN NaN NaN NaN NaN NaN];
+opt_sol_dist = NaN;
+
+% Check each solution
+for i = 1:size(allSolutions, 2)
+    sol = allSolutions(:,i);
+
+    for j = i:length(sol)
+        % Check if joint angle violates limit
+        angle = sol(j);
+        max = theta_maxs(j);
+        min = theta_mins(j);
+        now = thetasnow(j);
+        sol_dist = abs(angle - now);
+        if (angle < max && angle > min)
+            % Check if wraparound solutions are closer in joint space
+            if (abs(sol_dist) > pi)
+                add = angle + 2*pi;
+                if (abs(add - now) < sol_dist && add < max && add > min)
+                    sol(j) = add;
+                    sol_dist = abs(add - now);
+                end
+
+                sub = angle - 2*pi;
+                if (abs(sub - now) < sol_dist && sub < max && sub > min)
+                    sol(j) = sub;
+                    sol_dist = abs(sub - now);
+                end
+            end
+            
+            % Check if the solution is closer than the previous optimal (or
+            % the first workable solution found)
+            sol_dist = norm(sol - thetasnow);
+            if (sol_dist < opt_sol_dist || isnan(opt_sol_dist))
+                opt_sol = sol;
+                opt_sol_dist = sol_dist;
+            end
+        
+        % Check if wraparound solutions violate joint angle limits
+        else
+            sol_found = false;
+            add = angle + 2*pi;
+            if (abs(add - now) < sol_dist && add < max && add > min)
+                sol(j) = add;
+                sol_dist = abs(add - now);
+                sol_found = true;
+            end
+
+            sub = angle - 2*pi;
+            if (abs(sub - now) < sol_dist && sub < max && sub > min)
+                sol(j) = sub;
+                sol_dist = abs(sub - now);
+                sol_found = true;
+            end
+            
+            if (sol_found)
+                % Check if the solution is closer than the previous optimal
+                % (or the first workable solution found)
+                sol_dist = norm(sol - thetasnow);
+                if (sol_dist < opt_sol_dist || isnan(opt_sol_dist))
+                    opt_sol = sol;
+                    opt_sol_dist = sol_dist;
+                end
+            end
+        end
+    end
+end
+
+thetas = opt_sol;
+        
+    
