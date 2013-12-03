@@ -4,24 +4,28 @@ close all
 traj_resolution = 0.1;
 plot_resolution = 1; %must be >1
 
-[X,Y] = meshgrid(-2:traj_resolution:2, -2:traj_resolution:2);
-Z = X .* exp(-X.^2 - Y.^2);
+xscale = 2;
+yscale = 2;
+
+[X,Y] = meshgrid(-xscale:traj_resolution:xscale, -yscale:traj_resolution:yscale);
+Z = -X .* exp(-X.^2 - Y.^2);
 %normalize Z so that we can use the height as color data
 Z = (Z/max(max(Z))+1)/2*0.8+.1;
-zscale = 4;
+zscale = 2;
 
 h1 = figure(1);
 mesh(X,Y,Z*zscale);
-view_pos = [-5,-5,2];
-axis_val = [-2 2 -2 2 0 zscale];
+view_pos = [50,50,40];
+axis_val = [-10 10 -10 10 0 zscale];
 axis(axis_val);
 axis equal
 view(view_pos);
 
 %generate an animation of how the robot will follow the trajectory
+background_color = [0.3 0.3 0.3];
 h2 = figure(2);
-set(gcf,'Color',[0.1 0.1 0.1]);
-set(gca,'Color',[0.1 0.1 0.1]);
+set(gcf,'Color',background_color);
+set(gca,'Color',background_color);
 xlabel('X');
 ylabel('Y');
 zlabel('Z');
@@ -33,10 +37,23 @@ hold on
 grey = [.5 .5 .5];
 hue_adjust = 0.85;
 
+%define the origin of the 3D plot in the puma workspace
+x_origin = 7; %inches
+y_origin = 0;
+z_origin = 10; %1 inch of clearance from table top
+
+%create a container to store all of the points we want to paint
+painting = zeros(size(X,1)*2, 10);
+
+%define orientation of end effector, this will stay constant for the whole
+%paint job
+painting(:,5) = painting(:,5)+pi/2;
+
 %plot the color of the led at points
+counter = 1;
 for i = 1:size(X,1);
     %plot the trajectory
-    plot3(X(i,:),Y(i,:),Z(i,:)*zscale,'-','color',grey-.1);
+    plot3(X(i,:)+x_origin,Y(i,:)+y_origin,Z(i,:)*zscale+z_origin,'-','color',grey-.1);
     dir = (mod(i,2)*2-1)*-1;
     if dir == 1    
         %plot the led color
@@ -51,7 +68,15 @@ for i = 1:size(X,1);
             %obtain a color based on height and hue adjustment
             color = hsv2rgb([z 1 1]);
             %plot the result
-            plot3(X(i,j),Y(i,j),Z(i,j)*zscale,'.','color',color);
+            plot3(X(i,j)+x_origin,Y(i,j)+y_origin,Z(i,j)*zscale+z_origin,'.','color',color);
+            
+            %push the new point into the list of painting points buffer
+            painting(counter,1:3) = [X(i,j)+x_origin,Y(i,j)+y_origin,Z(i,j)*zscale+z_origin];
+            
+            %push the new LED color to the list of painting points buffer
+            painting(counter,7:9) = color;
+            
+            counter = counter+1;
         end
     else
         %plot the led color
@@ -66,7 +91,15 @@ for i = 1:size(X,1);
             %obtain a color based on height and hue adjustment
             color = hsv2rgb([z 1 1]);
             %plot the result
-            plot3(X(i,j),Y(i,j),Z(i,j)*zscale,'.','color',color);
+            plot3(X(i,j)+x_origin,Y(i,j)+y_origin,Z(i,j)*zscale+z_origin,'.','color',color);
+            
+            %push the new point into the list of painting points buffer
+            painting(counter,1:3) = [X(i,j)+x_origin,Y(i,j)+y_origin,Z(i,j)*zscale+z_origin];
+            
+            %push the new LED color to the list of painting points buffer
+            painting(counter,7:9) = color;
+            
+            counter = counter+1;
         end
         
     end
@@ -76,7 +109,7 @@ for i = 1:size(Y,1);
     dir = (mod(i,2)*2-1)*-1;
     if dir == 1   
         %plot the trajectory
-        plot3(X(:,i),Y(:,i),Z(:,i)*zscale,'-','color',grey+.3);
+        plot3(X(:,i)+x_origin,Y(:,i)+y_origin,Z(:,i)*zscale+z_origin,'-','color',grey+.3);
         %plot the led color
         for j = 1:plot_resolution:size(Y,2);
             %adjust the hue to make green the 'zero' value
@@ -89,7 +122,14 @@ for i = 1:size(Y,1);
             %obtain a color based on height and hue adjustment
             color = hsv2rgb([z 1 1]);
             %plot the result
-            plot3(X(j,i),Y(j,i),Z(j,i)*zscale,'.','color',color);
+            plot3(X(j,i)+x_origin,Y(j,i)+y_origin,Z(j,i)*zscale+z_origin,'.','color',color);
+            %push the new point into the list of painting points buffer
+            painting(counter,1:3) = [X(j,i)+x_origin,Y(j,i)+y_origin,Z(j,i)*zscale+z_origin];
+            
+            %push the new LED color to the list of painting points buffer
+            painting(counter,7:9) = color;
+            
+            counter = counter+1;
         end
     else
         for j = size(X,2):-plot_resolution:1;            
@@ -103,7 +143,13 @@ for i = 1:size(Y,1);
             %obtain a color based on height and hue adjustment
             color = hsv2rgb([z 1 1]);
             %plot the result
-            plot3(X(j,i),Y(j,i),Z(j,i)*zscale,'.','color',color);
+            plot3(X(j,i)+x_origin,Y(j,i)+y_origin,Z(j,i)*zscale+z_origin,'.','color',color);
+            painting(counter,1:3) = [X(j,i)+x_origin,Y(j,i)+y_origin,Z(j,i)*zscale+z_origin];
+            
+            %push the new LED color to the list of painting points buffer
+            painting(counter,7:9) = color;
+            
+            counter = counter+1;
         end
 
     end

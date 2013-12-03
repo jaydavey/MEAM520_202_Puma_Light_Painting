@@ -64,7 +64,9 @@ if (nargin == 0)
     % Load the team's painting file from disk.  It contains the variable painting.
     % If you prefer, you may omit loading a file from disk and just write
     % the necessary code here.
-    load team202
+    
+%     load team202
+    load team202_3Dplot
     
     % Pull the lists of x, y, and z positions out of the painting matrix.
     % You may do additional manipulations here to scale, shift, or
