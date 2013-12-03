@@ -43,7 +43,8 @@ figure(1)
 clf
 
 % Initialize the PUMA simulation.
-pumaStart()
+% pumaStart()
+pumaStart('LEDMarkerStyle', '.', 'LEDMarkerSize', 2)
 
 % Set the view so we are looking from roughly where the camera will be.
 view(80,20)
@@ -81,7 +82,7 @@ allSolutions = team202_puma_ik(xs, ys, zs, phis, thetas, psis);
     
 % Choose the best solution based on the robot's home position.  You may
 % want to change this if you prefer a different solution.
-thetastart = team202_choose_solution(allSolutions, thetahome);
+thetastart = [0 0 0 -pi*2 -pi/2 0]';
 
 % Calculate time needed to get from home pose to starting pose moving at
 % angular speed of 0.5 radians per second on the joint that has the
@@ -118,6 +119,7 @@ while(true)
 end
 
 % Set the LED to the desired starting color.
+pumaLEDOn;
 pumaLEDSet(rs, gs, bs)
 
 
@@ -133,7 +135,7 @@ i = 1;
 
 % Put time = 0 and the home position at the start of the history.
 thistory(i) = 0;
-thetahistory(i,:) = thetahome';
+thetahistory(i,:) = thetastart';
 
 % Start the built-in MATLAB timer so we can keep track of where we are in
 % the painting.
@@ -163,8 +165,7 @@ while(true)
     % Get the position, orientation, and color for the LED at this time.
     [~, x, y, z, phi, theta, psi, r, g, b] = team202_get_poc(thistory(i));
     
-    % Set the LED to the desired color.
-    pumaLEDSet(r, g, b)
+    
     
     % Get all possible solutions to the PUMA's full inverse kinematics for
     % placing frame 6 at the desired position and orientation.  The
@@ -194,7 +195,10 @@ while(true)
 
     % Servo the robot to these new joint angles.
     pumaServo(thetahistory(i,:));
-
+    
+    % Set the LED to the desired color.
+    pumaLEDSet(r, g, b)
+    
 end
 
 % Turn off the LED.

@@ -31,7 +31,7 @@ f =  2.5; % inches
 %% CHOOSE INPUT PARAMETERS
 
 % Set the test type.
-testType = 5;
+testType = 1;
 
 switch(testType)
 

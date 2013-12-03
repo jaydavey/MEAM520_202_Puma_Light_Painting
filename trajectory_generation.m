@@ -2,7 +2,7 @@
 clear all
 close all
 traj_resolution = 0.1;
-plot_resolution = 1; %must be >1
+plot_resolution = 3; %must be >1
 
 xscale = 2;
 yscale = 2;
@@ -16,7 +16,7 @@ zscale = 2;
 h1 = figure(1);
 mesh(X,Y,Z*zscale);
 view_pos = [50,50,40];
-axis_val = [-10 10 -10 10 0 zscale];
+axis_val = [-20 20 -20 20 0 zscale];
 axis(axis_val);
 axis equal
 view(view_pos);
@@ -38,9 +38,9 @@ grey = [.5 .5 .5];
 hue_adjust = 0.85;
 
 %define the origin of the 3D plot in the puma workspace
-x_origin = 7; %inches
+x_origin = 13; %inches
 y_origin = 0;
-z_origin = 10; %1 inch of clearance from table top
+z_origin = 15; %1 inch of clearance from table top
 
 %create a container to store all of the points we want to paint
 painting = zeros(size(X,1)*2, 10);
@@ -51,9 +51,9 @@ painting(:,5) = painting(:,5)+pi/2;
 
 %plot the color of the led at points
 counter = 1;
-for i = 1:size(X,1);
+for i = 1:plot_resolution:size(X,1);
     %plot the trajectory
-    plot3(X(i,:)+x_origin,Y(i,:)+y_origin,Z(i,:)*zscale+z_origin,'-','color',grey-.1);
+    plot3(X(i,:)+x_origin,Y(i,:)+y_origin,Z(i,:)*zscale+z_origin,'-','color',background_color-.1);
     dir = (mod(i,2)*2-1)*-1;
     if dir == 1    
         %plot the led color
@@ -105,11 +105,12 @@ for i = 1:size(X,1);
     end
     drawnow();
 end
-for i = 1:size(Y,1);
+for i = 1:plot_resolution:size(Y,1);
+    %plot the trajectory
+    plot3(X(:,i)+x_origin,Y(:,i)+y_origin,Z(:,i)*zscale+z_origin,'-','color',background_color+.3);
+        
     dir = (mod(i,2)*2-1)*-1;
     if dir == 1   
-        %plot the trajectory
-        plot3(X(:,i)+x_origin,Y(:,i)+y_origin,Z(:,i)*zscale+z_origin,'-','color',grey+.3);
         %plot the led color
         for j = 1:plot_resolution:size(Y,2);
             %adjust the hue to make green the 'zero' value
